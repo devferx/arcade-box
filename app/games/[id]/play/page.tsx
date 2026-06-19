@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { GAMES } from "@/lib/data";
 import { useArcade } from "@/lib/context/arcade-context";
 
-export default function PlayerPage({ params }: { params: { id: string } }) {
+export default function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { user, saveScore } = useArcade();
-  const game = GAMES.find((g) => g.id === params.id);
+  const { id } = use(params);
+  const game = GAMES.find((g) => g.id === id);
 
   const [score, setScore] = useState(0);
   const [lives] = useState(3);

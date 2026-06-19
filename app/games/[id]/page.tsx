@@ -1,19 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
+import { use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { GAMES, seededScores } from "@/lib/data";
 
 export default function DetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const game = useMemo(() => GAMES.find((g) => g.id === params.id), [params.id]);
+  const { id } = use(params);
+  const game = useMemo(() => GAMES.find((g) => g.id === id), [id]);
   const scores = useMemo(
-    () => seededScores(params.id.length * 17 + 3, 10),
-    [params.id]
+    () => seededScores(id.length * 17 + 3, 10),
+    [id]
   );
 
   if (!game) {
