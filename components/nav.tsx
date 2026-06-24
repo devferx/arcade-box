@@ -10,7 +10,7 @@ export default function Nav() {
   const pathname = usePathname();
   const { user, signOut } = useArcade();
 
-  const isLibrary = pathname === "/" || pathname.startsWith("/games");
+  const isLibrary = pathname.startsWith("/games");
   const isHall = pathname === "/hall-of-fame";
   const isAuth = pathname === "/auth";
 
@@ -29,7 +29,7 @@ export default function Nav() {
         </Link>
 
         <div className="links">
-          <Link href="/" className={isLibrary ? "active" : ""}>
+          <Link href="/games" className={isLibrary ? "active" : ""}>
             Library
           </Link>
           <Link href="/hall-of-fame" className={isHall ? "active" : ""}>
@@ -80,7 +80,7 @@ export default function Nav() {
         >
           MENU
         </div>
-        <Link href="/" className={isLibrary ? "active" : ""} onClick={close}>
+        <Link href="/games" className={isLibrary ? "active" : ""} onClick={close}>
           Library
         </Link>
         <Link
