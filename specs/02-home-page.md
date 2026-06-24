@@ -3,7 +3,7 @@
 ---
 id: 02-home-page
 title: Home Page — Landing `/`
-state: Approved
+state: Implemented
 date: 2026-06-23
 depends_on: 01-arcade-box-mvp-ui
 ---
