@@ -12,6 +12,7 @@ export default function Nav() {
 
   const isLibrary = pathname.startsWith("/games");
   const isHall = pathname === "/hall-of-fame";
+  const isAbout = pathname === "/about";
   const isAuth = pathname === "/auth";
 
   function close() {
@@ -34,6 +35,9 @@ export default function Nav() {
           </Link>
           <Link href="/hall-of-fame" className={isHall ? "active" : ""}>
             Hall of Fame
+          </Link>
+          <Link href="/about" className={isAbout ? "active" : ""}>
+            About
           </Link>
         </div>
 
@@ -89,6 +93,9 @@ export default function Nav() {
           onClick={close}
         >
           Hall of Fame
+        </Link>
+        <Link href="/about" className={isAbout ? "active" : ""} onClick={close}>
+          About
         </Link>
         <Link href="/auth" className={isAuth ? "active" : ""} onClick={close}>
           {user ? "Account" : "Sign In"}
