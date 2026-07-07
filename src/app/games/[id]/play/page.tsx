@@ -1,9 +1,11 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GAMES } from "@/lib/data";
 import { useArcade } from "@/lib/context/arcade-context";
+import AsteroidsCanvas from "@/games/asteroids/AsteroidsCanvas";
+import type { EngineState } from "@/games/asteroids/engine";
 
 export default function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -12,36 +14,32 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
   const game = GAMES.find((g) => g.id === id);
 
   const [score, setScore] = useState(0);
-  const [lives] = useState(3);
+  const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [name, setName] = useState(user ? user.name : "PLAYER");
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (over || paused) return;
-    const t = setInterval(
-      () => setScore((s) => s + Math.floor(10 + Math.random() * 90)),
-      220
-    );
-    return () => clearInterval(t);
-  }, [over, paused]);
-
-  useEffect(() => {
-    if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
-  }, [score]);
+  const [restartKey, setRestartKey] = useState(0);
 
   function endGame() {
     setOver(true);
   }
 
+  function handleEngineStateChange(state: EngineState) {
+    setScore(state.score);
+    setLives(state.lives);
+    setLevel(state.level);
+  }
+
   function restart() {
     setScore(0);
+    setLives(3);
     setLevel(1);
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setRestartKey((k) => k + 1);
   }
 
   function handleSave() {
@@ -77,7 +75,9 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           <div className="hud-stat">
             <div className="l">Player</div>
-            <div className="v" style={{ color: "var(--ink)" }}>{name}</div>
+            <div className="v" style={{ color: "var(--ink)" }}>
+              {name}
+            </div>
           </div>
           <div className="hud-stat">
             <div className="l">Score</div>
@@ -93,19 +93,13 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
           </div>
         </div>
         <div className="hud-actions">
-          <button
-            className="btn yellow"
-            onClick={() => setPaused((p) => !p)}
-          >
+          <button className="btn yellow" onClick={() => setPaused((p) => !p)}>
             {paused ? "RESUME" : "PAUSE"}
           </button>
           <button className="btn magenta" onClick={endGame}>
             END
           </button>
-          <button
-            className="btn ghost"
-            onClick={() => router.push(`/games/${game.id}`)}
-          >
+          <button className="btn ghost" onClick={() => router.push(`/games/${game.id}`)}>
             EXIT
           </button>
         </div>
@@ -114,47 +108,47 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
       <div className="crt">
         <div className="crt-screen">
           <div className="crt-content">
-            <div style={{ textAlign: "center" }}>
-              <div
-                className="pixel neon-cyan flicker"
-                style={{ fontSize: 18, marginBottom: 16 }}
-              >
-                {game.title}
+            {game.id === "asteroids" ? (
+              <AsteroidsCanvas
+                key={restartKey}
+                paused={paused}
+                onStateChange={handleEngineStateChange}
+                onGameOver={endGame}
+              />
+            ) : (
+              <div style={{ textAlign: "center" }}>
+                <div className="pixel neon-cyan flicker" style={{ fontSize: 18, marginBottom: 16 }}>
+                  {game.title}
+                </div>
+                <div
+                  className="pixel"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--magenta)",
+                    letterSpacing: "0.2em",
+                    marginBottom: 24,
+                  }}
+                >
+                  COMING SOON
+                </div>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ink-faint)",
+                    letterSpacing: "0.14em",
+                  }}
+                >
+                  GAME ENGINE NOT INSTALLED
+                </div>
               </div>
-              <div
-                className="pixel"
-                style={{
-                  fontSize: 11,
-                  color: "var(--magenta)",
-                  letterSpacing: "0.2em",
-                  marginBottom: 24,
-                }}
-              >
-                COMING SOON
-              </div>
-              <div
-                className="mono"
-                style={{
-                  fontSize: 11,
-                  color: "var(--ink-faint)",
-                  letterSpacing: "0.14em",
-                }}
-              >
-                GAME ENGINE NOT INSTALLED
-              </div>
-            </div>
+            )}
           </div>
 
           {paused && (
-            <div
-              className="crt-content"
-              style={{ background: "rgba(0,0,0,0.75)", zIndex: 5 }}
-            >
+            <div className="crt-content" style={{ background: "rgba(0,0,0,0.75)", zIndex: 5 }}>
               <div style={{ textAlign: "center" }}>
-                <div
-                  className="pixel neon-yellow"
-                  style={{ fontSize: 22 }}
-                >
+                <div className="pixel neon-yellow" style={{ fontSize: 22 }}>
                   PAUSED
                 </div>
                 <div
@@ -191,9 +185,7 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
               <div className="input-row">
                 <input
                   value={name}
-                  onChange={(e) =>
-                    setName(e.target.value.toUpperCase().slice(0, 10))
-                  }
+                  onChange={(e) => setName(e.target.value.toUpperCase().slice(0, 10))}
                   placeholder="YOUR INITIALS"
                 />
                 <button className="btn yellow" onClick={handleSave}>
@@ -208,10 +200,7 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
               <button className="btn" onClick={restart}>
                 PLAY AGAIN
               </button>
-              <button
-                className="btn magenta"
-                onClick={() => router.push("/")}
-              >
+              <button className="btn magenta" onClick={() => router.push("/")}>
                 BACK TO LIBRARY
               </button>
             </div>
